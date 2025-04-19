@@ -35,6 +35,7 @@ const AdminGallery = () => {
     if (!session) {
       navigate('/login');
     }
+    return session;
   };
 
   const fetchImages = async () => {
@@ -54,11 +55,8 @@ const AdminGallery = () => {
   const handleAddImage = async (e: React.FormEvent) => {
     e.preventDefault();
 
-    const { data: { session } } = await supabase.auth.getSession();
-    if (!session) {
-      navigate('/login');
-      return;
-    }
+    const session = await checkAuth();
+    if (!session) return;
 
     const { error } = await supabase
       .from('garage_images')
@@ -74,11 +72,8 @@ const AdminGallery = () => {
   };
 
   const handleDeleteImage = async (id: string) => {
-    const { data: { session } } = await supabase.auth.getSession();
-    if (!session) {
-      navigate('/login');
-      return;
-    }
+    const session = await checkAuth();
+    if (!session) return;
 
     const { error } = await supabase
       .from('garage_images')

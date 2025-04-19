@@ -31,10 +31,6 @@ interface VisitorStats {
 
 const AdminOrders = () => {
   const [orders, setOrders] = useState<Order[]>([]);
-  const [visitorStats, setVisitorStats] = useState<VisitorStats>({
-    total: 0,
-    byPage: {}
-  });
 
   const supabase = createClient(
     import.meta.env.VITE_SUPABASE_URL || '',
@@ -56,29 +52,7 @@ const AdminOrders = () => {
       setOrders(data || []);
     };
 
-    const fetchVisitorStats = async () => {
-      const { data, error } = await supabase
-        .from('visitors')
-        .select('page');
-
-      if (error) {
-        console.error('Error fetching visitors:', error);
-        return;
-      }
-
-      const stats = {
-        total: data.length,
-        byPage: data.reduce((acc: Record<string, number>, curr) => {
-          acc[curr.page] = (acc[curr.page] || 0) + 1;
-          return acc;
-        }, {})
-      };
-
-      setVisitorStats(stats);
-    };
-
     fetchOrders();
-    fetchVisitorStats();
   }, []);
 
   const updateOrderStatus = async (orderId: string, status: 'approved' | 'rejected') => {
@@ -108,25 +82,7 @@ const AdminOrders = () => {
         </div>
       </div>
 
-      {/* Visitor Statistics */}
-      <div className="bg-white rounded-lg shadow p-6 mb-8">
-        <div className="flex items-center mb-4">
-          <Users className="h-6 w-6 text-blue-600 mr-2" />
-          <h2 className="text-xl font-semibold">Besucherstatistiken</h2>
-        </div>
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-          <div className="bg-gray-50 p-4 rounded-lg">
-            <div className="text-2xl font-bold">{visitorStats.total}</div>
-            <div className="text-gray-600">Gesamtbesucher</div>
-          </div>
-          {Object.entries(visitorStats.byPage).map(([page, count]) => (
-            <div key={page} className="bg-gray-50 p-4 rounded-lg">
-              <div className="text-2xl font-bold">{count}</div>
-              <div className="text-gray-600">{page}</div>
-            </div>
-          ))}
-        </div>
-      </div>
+
 
       <div className="bg-white rounded-lg shadow overflow-hidden">
         <table className="min-w-full divide-y divide-gray-200">

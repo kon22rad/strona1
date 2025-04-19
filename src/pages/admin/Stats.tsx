@@ -32,6 +32,7 @@ const AdminStats = () => {
     if (!session) {
       navigate('/login');
     }
+    return session;
   };
 
   const fetchStats = async () => {
