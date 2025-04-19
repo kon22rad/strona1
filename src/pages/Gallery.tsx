@@ -17,22 +17,33 @@ const Gallery = () => {
   );
 
   useEffect(() => {
-    const fetchImages = async () => {
-      const { data, error } = await supabase
-        .from('garage_images')
-        .select('*')
-        .order('created_at', { ascending: false });
-
-      if (error) {
-        console.error('Error fetching images:', error);
-        return;
-      }
-
-      setImages(data || []);
-    };
-
+    checkAuth();
     fetchImages();
   }, []);
+
+  const checkAuth = async () => {
+    try {
+      const { data: { session } } = await supabase.auth.getSession();
+      return session;
+    } catch (error) {
+      console.error('Error checking authentication:', error);
+      return null;
+    }
+  };
+
+  const fetchImages = async () => {
+    const { data, error } = await supabase
+      .from('garage_images')
+      .select('*')
+      .order('created_at', { ascending: false });
+
+    if (error) {
+      console.error('Error fetching images:', error);
+      return;
+    }
+
+    setImages(data || []);
+  };
 
   return (
     <div className="max-w-7xl mx-auto px-4 py-12">
