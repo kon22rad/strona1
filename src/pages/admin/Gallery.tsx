@@ -31,11 +31,18 @@ const AdminGallery = () => {
   }, []);
 
   const checkAuth = async () => {
-    const { data: { session } } = await supabase.auth.getSession();
-    if (!session) {
+    try {
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session) {
+        navigate('/login');
+        return null;
+      }
+      return session;
+    } catch (error) {
+      console.error('Error checking authentication:', error);
       navigate('/login');
+      return null;
     }
-    return session;
   };
 
   const fetchImages = async () => {
