@@ -17,10 +17,11 @@ const Gallery = () => {
   );
 
   useEffect(() => {
-    checkAuth();
+    // Publiczna galeria nie wymaga uwierzytelnienia, więc nie sprawdzamy sesji
     fetchImages();
   }, []);
 
+  // Funkcja pozostawiona dla kompatybilności, ale nie jest używana w publicznej galerii
   const checkAuth = async () => {
     try {
       const { data: { session } } = await supabase.auth.getSession();

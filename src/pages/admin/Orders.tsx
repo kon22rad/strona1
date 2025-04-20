@@ -76,8 +76,11 @@ const AdminOrders = () => {
       <div className="flex justify-between items-center mb-8">
         <h1 className="text-3xl font-bold">Bestellungen verwalten</h1>
         <div className="flex space-x-4">
-          <Link to="/admin/gallery" className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700">
-            Galerie verwalten
+          <Link to="/admin/gallery-manager" className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700">
+            Zarządzanie Galerią
+          </Link>
+          <Link to="/admin/stats" className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700">
+            Statystyki
           </Link>
         </div>
       </div>

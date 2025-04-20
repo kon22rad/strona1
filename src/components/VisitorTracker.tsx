@@ -16,7 +16,8 @@ const VisitorTracker = () => {
         .from('visitors')
         .insert([{
           page: location.pathname,
-          user_agent: navigator.userAgent
+          user_agent: navigator.userAgent,
+          visited_at: new Date().toISOString()
         }]);
     };
     
