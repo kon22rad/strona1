@@ -23,24 +23,10 @@ const AdminStats = () => {
   );
 
   useEffect(() => {
-    checkAuth();
     fetchStats();
   }, []);
 
-  const checkAuth = async () => {
-    try {
-      const { data: { session } } = await supabase.auth.getSession();
-      if (!session) {
-        navigate('/login');
-        return null;
-      }
-      return session;
-    } catch (error) {
-      console.error('Error checking authentication:', error);
-      navigate('/login');
-      return null;
-    }
-  };
+  // Usunięto funkcję checkAuth, ponieważ ProtectedRoute obsługuje uwierzytelnianie
 
   const fetchStats = async () => {
     const { data, error } = await supabase

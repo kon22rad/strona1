@@ -1,16 +1,35 @@
 import React from 'react';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
-import { Warehouse, Settings, LogOut } from 'lucide-react';
+import { Warehouse, Settings, LogOut, User, LogIn } from 'lucide-react';
+import { useEffect, useState } from 'react';
+import { supabase } from '../lib/supabaseClient'; // Import Supabase client
+import { Session } from '@supabase/supabase-js';
 
 const Navbar = () => {
   const navigate = useNavigate();
   const location = useLocation();
-  const isAuthenticated = localStorage.getItem('isAuthenticated') === 'true';
+  const [session, setSession] = useState<Session | null>(null);
   const isAdminPage = location.pathname.startsWith('/admin');
 
-  const handleLogout = () => {
-    localStorage.removeItem('isAuthenticated');
-    navigate('/login');
+  useEffect(() => {
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      setSession(session);
+    });
+
+    const { data: authListener } = supabase.auth.onAuthStateChange(
+      (_event, session) => {
+        setSession(session);
+      }
+    );
+
+    return () => {
+      authListener?.subscription.unsubscribe();
+    };
+  }, []);
+
+  const handleLogout = async () => {
+    await supabase.auth.signOut();
+    navigate('/'); // Redirect to home page after logout
   };
 
   return (
@@ -32,22 +51,33 @@ const Navbar = () => {
                 <Link to="/kontakt" className="text-gray-700 hover:text-blue-600">Kontakt</Link>
               </>
             )}
-            {isAuthenticated ? (
+            {session ? (
               <>
-                <Link to="/admin" className="text-gray-700 hover:text-blue-600">
-                  <Settings className="h-5 w-5" />
-                </Link>
+                {/* Sprawdzenie czy użytkownik to admin - można ulepszyć o role */} 
+                {session.user?.email === 'admin@admin.com' ? (
+                  <Link to="/admin/orders" className="flex items-center text-gray-700 hover:text-blue-600">
+                    <Settings className="h-5 w-5 mr-1" /> Panel Admina
+                  </Link>
+                ) : (
+                  <Link to="/customer-panel" className="flex items-center text-gray-700 hover:text-blue-600">
+                    <User className="h-5 w-5 mr-1" /> Moje Konto
+                  </Link>
+                )}
                 <button
                   onClick={handleLogout}
-                  className="text-gray-700 hover:text-blue-600"
+                  className="flex items-center text-gray-700 hover:text-blue-600"
                 >
-                  <LogOut className="h-5 w-5" />
+                  <LogOut className="h-5 w-5 mr-1" /> Wyloguj się
                 </button>
               </>
             ) : (
-              <Link to="/login" className="text-gray-700 hover:text-blue-600">
-                Admin
-              </Link>
+              <>
+                <Link to="/login" className="flex items-center text-gray-700 hover:text-blue-600">
+                   <LogIn className="h-5 w-5 mr-1" /> Zaloguj się
+                </Link>
+                 {/* Można dodać link do rejestracji obok logowania, jeśli strona Login.tsx obsługuje przełączanie */} 
+                 {/* <Link to="/login?register=true" className="text-gray-700 hover:text-blue-600">Zarejestruj się</Link> */} 
+              </>
             )}
           </div>
         </div>

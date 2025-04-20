@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { createClient } from '@supabase/supabase-js';
+import { supabase } from '../../lib/supabaseClient'; // Import shared Supabase client
 import { Check, X, Users } from 'lucide-react';
 import { Link } from 'react-router-dom';
 
@@ -20,7 +20,7 @@ interface Order {
     email: string;
     phone: string;
   };
-  status: 'pending' | 'approved' | 'rejected';
+  status: string; // Changed to string to handle more statuses
   total_price: number;
 }
 
@@ -32,10 +32,16 @@ interface VisitorStats {
 const AdminOrders = () => {
   const [orders, setOrders] = useState<Order[]>([]);
 
-  const supabase = createClient(
-    import.meta.env.VITE_SUPABASE_URL || '',
-    import.meta.env.VITE_SUPABASE_ANON_KEY || ''
-  );
+  // Usunięto lokalną inicjalizację klienta Supabase
+
+  // Definicja możliwych statusów zamówienia
+  const orderStatuses: Array<{ value: string; label: string }> = [
+    { value: 'pending', label: 'Oczekujące' }, // Dodano brakujący przecinek
+    { value: 'approved', label: 'Zatwierdzone' },
+    { value: 'shipped', label: 'Wysłane' },
+    { value: 'delivered', label: 'Dostarczone' }, // Dodano 'Dostarczone' (Odebrane)
+    { value: 'rejected', label: 'Odrzucone' },
+  ];
 
   useEffect(() => {
     const fetchOrders = async () => {
@@ -55,7 +61,7 @@ const AdminOrders = () => {
     fetchOrders();
   }, []);
 
-  const updateOrderStatus = async (orderId: string, status: 'approved' | 'rejected') => {
+  const updateOrderStatus = async (orderId: string, status: string) => {
     const { error } = await supabase
       .from('orders')
       .update({ status })
@@ -71,18 +77,28 @@ const AdminOrders = () => {
     ));
   };
 
+  // Funkcje pomocnicze do statusów (można przenieść do utils)
+  const translateStatus = (status: string): string => {
+    const statusObj = orderStatuses.find(s => s.value === status);
+    return statusObj ? statusObj.label : status;
+  };
+
+  const getStatusColor = (status: string): string => {
+    switch (status) {
+      case 'pending': return 'bg-yellow-100 text-yellow-800';
+      case 'approved': return 'bg-blue-100 text-blue-800';
+      case 'shipped': return 'bg-indigo-100 text-indigo-800';
+      case 'delivered': return 'bg-green-100 text-green-800';
+      case 'rejected': return 'bg-red-100 text-red-800';
+      default: return 'bg-gray-100 text-gray-800';
+    }
+  };
+
   return (
     <div className="max-w-7xl mx-auto px-4 py-12">
       <div className="flex justify-between items-center mb-8">
         <h1 className="text-3xl font-bold">Bestellungen verwalten</h1>
-        <div className="flex space-x-4">
-          <Link to="/admin/gallery-manager" className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700">
-            Zarządzanie Galerią
-          </Link>
-          <Link to="/admin/stats" className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700">
-            Statystyki
-          </Link>
-        </div>
+        {/* Usunięto tymczasowe linki */}
       </div>
 
 
@@ -143,33 +159,24 @@ const AdminOrders = () => {
                   </div>
                 </td>
                 <td className="px-6 py-4 whitespace-nowrap">
-                  <span className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${
-                    order.status === 'approved' ? 'bg-green-100 text-green-800' :
-                    order.status === 'rejected' ? 'bg-red-100 text-red-800' :
-                    'bg-yellow-100 text-yellow-800'
-                  }`}>
-                    {order.status === 'approved' ? 'Genehmigt' :
-                     order.status === 'rejected' ? 'Abgelehnt' :
-                     'Ausstehend'}
+                  <span className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${getStatusColor(order.status)}`}>
+                    {translateStatus(order.status)} {/* Użycie funkcji pomocniczych */}
                   </span>
                 </td>
                 <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
-                  {order.status === 'pending' && (
-                    <div className="flex space-x-2">
-                      <button
-                        onClick={() => updateOrderStatus(order.id, 'approved')}
-                        className="text-green-600 hover:text-green-900"
-                      >
-                        <Check className="h-5 w-5" />
-                      </button>
-                      <button
-                        onClick={() => updateOrderStatus(order.id, 'rejected')}
-                        className="text-red-600 hover:text-red-900"
-                      >
-                        <X className="h-5 w-5" />
-                      </button>
-                    </div>
-                  )}
+                  {/* Rozwijana lista do zmiany statusu */}
+                  <select
+                    value={order.status}
+                    onChange={(e) => updateOrderStatus(order.id, e.target.value)}
+                    // Simplified dynamic classes
+                    className={`border rounded px-2 py-1 text-sm ${getStatusSelectClasses(order.status)}`}
+                  >
+                    {orderStatuses.map((statusOption) => (
+                      <option key={statusOption.value} value={statusOption.value}>
+                        {statusOption.label}
+                      </option>
+                    ))}
+                  </select>
                 </td>
               </tr>
             ))}
@@ -178,6 +185,18 @@ const AdminOrders = () => {
       </div>
     </div>
   );
+};
+
+// Helper function for select element classes (can be moved to utils)
+const getStatusSelectClasses = (status: string): string => {
+  switch (status) {
+    case 'pending': return 'border-yellow-300 bg-yellow-50 text-yellow-800';
+    case 'approved': return 'border-blue-300 bg-blue-50 text-blue-800';
+    case 'shipped': return 'border-indigo-300 bg-indigo-50 text-indigo-800';
+    case 'delivered': return 'border-green-300 bg-green-50 text-green-800';
+    case 'rejected': return 'border-red-300 bg-red-50 text-red-800';
+    default: return 'border-gray-300 bg-gray-50 text-gray-800';
+  }
 };
 
 export default AdminOrders;

@@ -22,7 +22,7 @@ const AdminDashboard = () => {
         </Link>
 
         <Link
-          to="/admin/gallery"
+          to="/admin/gallery-manager"
           className="bg-white p-6 rounded-lg shadow-md hover:shadow-lg transition-shadow"
         >
           <div className="flex items-center space-x-4">

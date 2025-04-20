@@ -7,6 +7,7 @@ interface GarageImage {
   description: string;
   image_url: string;
   created_at: string;
+  price?: number; // Add price field
 }
 
 const Gallery = () => {
@@ -35,7 +36,7 @@ const Gallery = () => {
   const fetchImages = async () => {
     const { data, error } = await supabase
       .from('garage_images')
-      .select('*')
+      .select('*') // Selects all columns, including the new price
       .order('created_at', { ascending: false });
 
     if (error) {
@@ -60,7 +61,10 @@ const Gallery = () => {
             />
             <div className="p-6">
               <h3 className="text-xl font-semibold mb-2">{image.title}</h3>
-              <p className="text-gray-600">{image.description}</p>
+              <p className="text-gray-600 mb-4">{image.description}</p>
+              {image.price && (
+                <p className="text-lg font-medium text-green-600">Cena: {image.price.toFixed(2)} zł</p>
+              )}
             </div>
           </div>
         ))}
